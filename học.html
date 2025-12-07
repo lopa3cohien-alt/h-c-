@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UniMatcher — Chọn Trường Chuẩn Theo Bạn</title>
+  <meta name="description" content="UniMatcher - Gợi ý ngành & trường dựa trên RIASEC, năng lực và dữ liệu điểm chuẩn.">
+  <meta name="author" content="UniMatcher Generator">
+  <style>
+    /* =========================
+       UniMatcher — Styles (compact)
+       ========================= */
+    :root{
+      --bg:#f7fbff; --card:#ffffff; --muted:#6b7280; --accent1:#cfeefe; --accent2:#eadff8;
+      --primary:#6eaef9; --dark:#06222e; --radius:12px; --glass:rgba(255,255,255,0.6);
+      --success:#16a34a; --danger:#ef4444; --shadow: 0 8px 24px rgba(14,30,50,0.06);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#ffffff);color:#0f172a}
+    a{color:inherit}
+    header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#012033}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{padding:8px 10px;border-radius:8px;text-decoration:none;font-weight:600;color:#04233b}
+    .btn{background:linear-gradient(90deg,var(--primary),var(--accent1));padding:8px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer}
+    .container{max-width:1200px;margin:24px auto;padding:0 18px}
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:22px;align-items:center}
+    .card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    h1{margin:0;font-size:30px;color:#033047}
+    p.lead{margin:8px 0 0;color:var(--muted)}
+    .chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .chip{background:var(--glass);padding:8px 12px;border-radius:999px;font-weight:700;color:#033047}
+    .feature-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+    .feature{display:flex;gap:10px;align-items:flex-start}
+    .feature .dot{width:10px;height:10px;border-radius:999px;background:var(--primary);margin-top:6px}
+    input,select,textarea{padding:10px;border-radius:8px;border:1px solid #e6f0fb;outline:none}
+    .search{display:flex;gap:8px;align-items:center}
+    .search input{flex:1}
+    main section{margin-top:20px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    footer{margin:40px 0;padding:18px;text-align:center;color:var(--muted)}
+    /* Test UI */
+    .qwrap{min-height:200px}
+    .question{font-weight:800;margin-bottom:8px}
+    .options{display:flex;gap:8px;flex-wrap:wrap}
+    .opt{padding:8px 12px;border-radius:8px;border:1px solid #e6f0fb;cursor:pointer}
+    .opt.selected{background:linear-gradient(90deg,#cfeefe,#dff3ff);border-color:var(--primary)}
+    .prog{height:10px;background:#eef7ff;border-radius:999px;overflow:hidden}
+    .prog > i{display:block;height:100%;background:linear-gradient(90deg,#8fd3ff,#cfeefe)}
+    /* table */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f0f6ff;text-align:left}
+    /* compare charts (simple) */
+    .bar{height:12px;background:#e6f7ff;border-radius:999px;overflow:hidden}
+    .bar > i{display:block;height:100%;background:linear-gradient(90deg,#6eaef9,#b7e0ff)}
+    /* responsive */
+    @media (max-width:980px){.hero{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}.nav-hide{display:none}}
+    /* dark mode */
+    :root.dark{--bg:#04121a;--card:#07202a;--muted:#9fb4c9;color:#e6f6ff}
+    :root.dark header{background:rgba(6,18,26,0.85)}
+    .small{font-size:13px;color:var(--muted)}
+    /* utility */
+    .flex{display:flex;gap:10px;align-items:center}
+    .right{margin-left:auto}
+    pre{background:#0b1220;color:#c7e9ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="brand">
+      <div class="logo">UM</div>
+      <div>
+        <div style="font-weight:800">UniMatcher</div>
+        <div class="small">Chọn ngành & trường theo sở thích & năng lực</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#home">Trang chủ</a>
+      <a href="#test">Bài test</a>
+      <a href="#majors">Gợi ý ngành</a>
+      <a href="#schools">Gợi ý trường</a>
+      <a href="#compare">So sánh</a>
+      <a href="#blog">Blog</a>
+      <a href="#contact">Liên hệ</a>
+      <button class="btn nav-hide" id="startBtn">Bắt đầu đánh giá</button>
+      <button class="btn" id="darkToggle">🌙</button>
+    </nav>
+  </header>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="container">
+    <main>
+      <!-- HERO -->
+      <section id="home" class="hero">
+        <div class="card">
+          <h1>Định Hướng Đúng — Tương Lai Sáng</h1>
+          <p class="lead">UniMatcher giúp học sinh khám phá sở thích, đánh giá năng lực bằng bài test RIASEC, và gợi ý danh sách ngành & trường phù hợp theo khu vực, điểm chuẩn, và học phí.</p>
+          <div class="chips">
+            <div class="chip">RIASEC (60 câu)</div>
+            <div class="chip">AI Recommendation</div>
+            <div class="chip">So sánh 2 trường</div>
+            <div class="chip">Bộ lọc nâng cao</div>
+          </div>
+
+          <div style="margin-top:14px" class="feature-list">
+            <div class="feature"><div class="dot"></div><div><strong>Bài test sở thích (RIASEC)</strong><div class="small">60 câu, chấm tự động</div></div></div>
+            <div class="feature"><div class="dot"></div><div><strong>Bài đánh giá năng lực</strong><div class="small">Toán - Văn - Anh - KHTN</div></div></div>
+            <div class="feature"><div class="dot"></div><div><strong>Gợi ý ngành & trường</strong><div class="small">Theo vùng, điểm chuẩn, học phí</div></div></div>
+            <div class="feature"><div class="dot"></div><div><strong>Bảng quản trị</strong><div class="small">Quản lý ngành/trường/bài viết</div></div></div>
+          </div>
+
+          <div style="margin-top:16px" class="search">
+            <input id="quickSearch" placeholder="Tìm trường / ngành / tỉnh..." />
+            <button class="btn" id="gotoSchools">Tìm trường</button>
+          </div>
+
+          <div style="margin-top:16px" class="flex">
+            <button class="btn" id="goTest">Bắt đầu đánh giá năng lực</button>
+            <button class="btn" id="downloadSample">Tải mẫu dữ liệu</button>
+            <div class="right small">Bạn có thể export/import dữ liệu (JSON)</div>
+          </div>
+        </div>
+
+        <div class="card" style="text-align:center">
+          <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop" alt="students" style="width:100%;border-radius:8px;display:block;margin-bottom:12px;"/>
+          <strong>Gợi ý trường theo sở thích & năng lực</strong>
+          <p class="small">Nhập kết quả test để nhận gợi ý 5 trường phù hợp nhất</p>
+        </div>
+      </section>
+
+      <!-- TEST SECTION -->
+      <section id="test" class="section">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <h2 style="margin:0">Bài test sở thích & năng lực (RIASEC) — 60 câu</h2>
+              <div class="small">Thời gian: ~5–10 phút. Chọn 1–5 (1: không phù hợp — 5: rất phù hợp).</div>
+            </div>
+            <div class="small">Kết quả được lưu cục bộ trên trình duyệt</div>
+          </div>
+
+          <hr style="margin:12px 0"/>
+
+          <div id="testArea">
+            <div id="qMeta" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+              <div id="qCount">Câu 1 / 60</div>
+              <div style="flex:1"><div class="prog"><i id="progFill" style="width:1%"></i></div></div>
+              <div class="small right" id="testStatus">Chưa hoàn thành</div>
+            </div>
+
+            <div id="qWrap" class="qwrap card" style="padding:16px"></div>
+
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn" id="prevQ">Quay lại</button>
+              <button class="btn" id="nextQ">Tiếp theo</button>
+              <div class="right">
+                <button class="btn" id="finishTest">Hoàn thành & Xem kết quả</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="resultArea" style="margin-top:14px;display:none">
+            <h3>Kết quả test</h3>
+            <div id="resultSummary" class="card"></div>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <button class="btn" id="suggestMajors">Gợi ý ngành</button>
+              <button class="btn" id="suggestSchools">Gợi ý trường</button>
+              <button class="btn" id="exportResult">Xuất kết quả (JSON)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MAJORS SECTION -->
+      <section id="majors" class="section">
+        <h2>Gợi ý ngành</h2>
+        <div class="card">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="flex:1">
+              <p class="small">Danh sách ngành học được liên kết với kết quả RIASEC. Mỗi ngành có mô tả, kỹ năng cần có, cơ hội nghề nghiệp và trường đào tạo.</p>
+            </div>
+            <div class="toolbar">
+              <select id="filterSkill">
+                <option value="">Lọc theo kỹ năng (tất cả)</option>
+              </select>
+              <select id="sortMajor">
+                <option value="relevance">Sắp xếp: Phù hợp</option>
+                <option value="name">Tên A→Z</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="majorList" style="margin-top:12px" class="grid-3"></div>
+        </div>
+      </section>
+
+      <!-- SCHOOLS SECTION -->
+      <section id="schools" class="section">
+        <h2>Gợi ý trường</h2>
+        <div class="card">
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+            <select id="filterRegion"><option value="">Tất cả tỉnh/thành</option></select>
+            <select id="filterType"><option value="">Loại</option><option value="public">Công lập</option><option value="private">Tư thục</option></select>
+            <select id="filterFee"><option value="">Học phí</option><option value="lt10000">Dưới 10 triệu/năm</option><option value="10000-30000">10k-30k (K VND)</option><option value="gt30000">Trên 30k</option></select>
+            <select id="filterRank"><option value="">Xếp hạng</option><option value="top50">Top 50</option><option value="top200">Top 200</option></select>
+            <input id="schoolSearch" placeholder="Tìm theo tên ngành / trường..." />
+            <button class="btn" id="applyFilters">Áp dụng</button>
+            <button class="btn" id="resetFilters">Đặt lại</button>
+          </div>
+
+          <div id="schoolList" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+      <!-- COMPARE SECTION -->
+      <section id="compare" class="section">
+        <h2>So sánh 2 trường</h2>
+        <div class="card">
+          <div style="display:flex;gap:10px;align-items:center">
+            <select id="cmpA"><option value="">-- Chọn trường A --</option></select>
+            <select id="cmpB"><option value="">-- Chọn trường B --</option></select>
+            <button class="btn" id="doCompare">So sánh</button>
+            <button class="btn" id="clearCompare">Xóa</button>
+          </div>
+
+          <div id="compareResult" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+      <!-- BLOG SECTION -->
+      <section id="blog" class="section">
+        <h2>Blog / Kiến thức định hướng</h2>
+        <div class="card">
+          <div class="grid-3" id="blogList"></div>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact" class="section">
+        <h2>Liên hệ</h2>
+        <div class="card">
+          <form id="contactForm" onsubmit="return false">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input id="cname" placeholder="Họ tên" required />
+              <input id="cemail" placeholder="Email" required />
+              <input id="cphone" placeholder="Số điện thoại (tuỳ chọn)" />
+            </div>
+            <textarea id="cmessage" placeholder="Nội dung" style="width:100%;margin-top:8px" required></textarea>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+              <button class="btn" id="sendContact">Gửi</button>
+              <div class="right small">Email: support@unimatcher.test • SĐT khẩn: 0123-456-789</div>
+            </div>
+          </form>
+          <div style="margin-top:12px">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!..." style="width:100%;height:260px;border:0;border-radius:8px"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN -->
+      <section id="admin" class="section">
+        <h2>Admin Panel (demo)</h2>
+        <div class="card">
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn" id="exportData">Export data (JSON)</button>
+            <button class="btn" id="importData">Import data (JSON)</button>
+            <input type="file" id="importFile" accept="application/json" style="display:none" />
+            <button class="btn" id="seedData">Seed sample data</button>
+            <button class="btn" id="clearData">Xóa dữ liệu</button>
+            <div class="right small">Dữ liệu demo được lưu ở <code>localStorage</code></div>
+          </div>
+          <div style="margin-top:12px">
+            <h4>Hướng dẫn nhanh (Admin)</h4>
+            <ul>
+              <li>Export: lưu data hiện tại (schools/majors/blogs/tests/users) ra file JSON.</li>
+              <li>Import: tải file JSON lên để thay thế data (demo).</li>
+              <li>Seed: tạo data mẫu để thử chức năng.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    UniMatcher • Thiết kế hiện đại – tối giản • © 2025 • Được tạo cho mục đích minh họa
+  </footer>
+
+  <!-- =========================
+       JavaScript — Functionality
+       ========================= -->
+  <script>
+  /* ===========================================================
+     UniMatcher — Single-file application
+     - RIASEC: 60 questions (explicit array)
+     - Majors and Schools sample DB (many entries)
+     - Features: test UI, scoring, suggestions, filters, compare, export/import
+     - Data persistence: localStorage under key 'unimatcher_db'
+     =========================================================== */
+
+  // ---------------------------
+  // Utility helpers
+  // ---------------------------
+  function el(id){ return document.getElementById(id) }
+  function saveDB(db){ localStorage.setItem('unimatcher_db', JSON.stringify(db)) }
+  function loadDB(){ return JSON.parse(localStorage.getItem('unimatcher_db') || '{}') }
+  function uid(prefix='id'){ return prefix + '_' + Math.random().toString(36).slice(2,9) }
+
+  // ---------------------------
+  // Sample DB (majors, schools, blogs)
+  // We include many entries to make the file long and realistic
+  // ---------------------------
+  const SAMPLE_MAJORS = [
+    { id:'cs', name:'Công nghệ thông tin', desc:'Lập trình, hệ thống, AI, dữ liệu', skills:['Toán','Logic','Lập trình'], jobs:['Developer','Data Scientist','AI Engineer'], groups:['I','C'] },
+    { id:'se', name:'Kỹ thuật phần mềm', desc:'Phát triển phần mềm, quy trình, QA', skills:['Lập trình','Teamwork','Toán'], jobs:['Software Engineer','QA'], groups:['C','I'] },
+    { id:'it', name:'Hệ thống thông tin', desc:'Quản trị hệ thống, mạng, bảo mật', skills:['Mạng','Bảo mật','Quản trị hệ thống'], jobs:['SysAdmin','Network Engineer'], groups:['R','C'] },
+    { id:'biz', name:'Quản trị kinh doanh', desc:'Marketing, quản lý, tài chính', skills:['Văn','Anh','Lãnh đạo'], jobs:['Manager','Marketer'], groups:['E','S'] },
+    { id:'fin', name:'Tài chính - Ngân hàng', desc:'Phân tích tài chính, đầu tư', skills:['Toán','Phân tích','Excel'], jobs:['Analyst','Banker'], groups:['C','I'] },
+    { id:'eng', name:'Kỹ thuật cơ khí', desc:'Thiết kế, sản xuất, cơ khí', skills:['Toán','Vật lý','Vẽ kỹ thuật'], jobs:['Kỹ sư cơ khí'], groups:['R','C'] },
+    { id:'elec', name:'Kỹ thuật điện - điện tử', desc:'Điện tử, mạch, tự động hóa', skills:['Vật lý','Toán','Lắp ráp'], jobs:['Kỹ sư điện'], groups:['R','C'] },
+    { id:'arch', name:'Kiến trúc', desc:'Thiết kế không gian, công trình', skills:['Vẽ','Sáng tạo','Toán'], jobs:['Kiến trúc sư'], groups:['A','R'] },
+    { id:'design', name:'Thiết kế đồ họa', desc:'Thiết kế, sáng tạo hình ảnh', skills:['Sáng tạo','Vẽ','Photoshop'], jobs:['Designer'], groups:['A'] },
+    { id:'edu', name:'Sư phạm', desc:'Giảng dạy, truyền đạt kiến thức', skills:['Kiên nhẫn','Giao tiếp','Tổ chức'], jobs:['Giáo viên','Nhà đào tạo'], groups:['S'] },
+    { id:'med', name:'Y dược', desc:'Chăm sóc sức khoẻ, y học', skills:['Học rộng','Tinh tế','Chăm sóc'], jobs:['Bác sĩ','Dược sĩ'], groups:['S','I'] },
+    { id:'law', name:'Luật', desc:'Hệ thống pháp luật, tranh tụng', skills:['Văn','Logic','Luật'], jobs:['Luật sư','Cố vấn pháp lý'], groups:['E','C'] },
+    { id:'agr', name:'Nông nghiệp', desc:'Kỹ thuật trồng trọt, chăn nuôi', skills:['Ngoại trời','Kỹ thuật','Sinh học'], jobs:['Kỹ sư nông nghiệp'], groups:['R'] },
+    { id:'env', name:'Môi trường', desc:'Bảo vệ môi trường, kỹ thuật môi trường', skills:['Khoa học','Toán','Hiểu biết tự nhiên'], jobs:['Chuyên viên môi trường'], groups:['I','R'] },
+    { id:'hotel', name:'Du lịch - Nhà hàng', desc:'Dịch vụ, lữ hành, tổ chức sự kiện', skills:['Giao tiếp','Tiếng Anh','Dịch vụ'], jobs:['Quản lý khách sạn','Hướng dẫn viên'], groups:['E','S'] },
+    { id:'psych', name:'Tâm lý học', desc:'Nghiên cứu và can thiệp tâm lý', skills:['Giao tiếp','Phân tích','Lắng nghe'], jobs:['Tư vấn viên','Nhà nghiên cứu'], groups:['S','I'] },
+    // ... thêm nhiều ngành để làm phong phú
+  ];
+
+  const SAMPLE_SCHOOLS = [
+    { id:'u1', name:'Đại học Bách Khoa Quốc Gia X', region:'Hồ Chí Minh', type:'public', fee:12000, rank:25, majors:['cs','se','it','eng'], score:[26.5,26.0,25.5], desc:'Đại học kỹ thuật hàng đầu, chuyên ngành CNTT, cơ khí.' },
+    { id:'u2', name:'Đại học Kinh tế Y', region:'Hà Nội', type:'public', fee:10000, rank:18, majors:['biz','fin','law'], score:[25.5,25.0,24.5], desc:'Trường top về kinh tế, quản trị, marketing.' },
+    { id:'u3', name:'Trường Đại học Tư thục Z', region:'Đà Nẵng', type:'private', fee:32000, rank:150, majors:['design','hotel','biz'], score:[null,null,null], desc:'Trường tư thục hiện đại, nhiều chương trình liên kết.' },
+    { id:'u4', name:'Học viện Công nghệ Thông tin A', region:'Hồ Chí Minh', type:'public', fee:15000, rank:40, majors:['cs','it','se'], score:[26.0,25.5,25.2], desc:'Chuyên sâu về CNTT và dữ liệu.' },
+    { id:'u5', name:'Đại học Y Dược TP', region:'Hà Nội', type:'public', fee:22000, rank:10, majors:['med'], score:[28.0], desc:'Trường y hàng đầu với hệ thống bệnh viện liên kết.' },
+    { id:'u6', name:'Đại học Kiến trúc Q', region:'Hồ Chí Minh', type:'public', fee:12000, rank:70, majors:['arch','design'], score:[24.5,24.0], desc:'Nổi tiếng về kiến trúc và thiết kế.' },
+    { id:'u7', name:'Đại học Nông Lâm', region:'Lâm Đồng', type:'public', fee:8000, rank:120, majors:['agr','env'], score:[20.5,20.0], desc:'Chuyên ngành nông nghiệp và môi trường.' },
+    { id:'u8', name:'Trường Quốc tế D', region:'Hồ Chí Minh', type:'private', fee:45000, rank:200, majors:['cs','design','biz'], score:[null], desc:'Chương trình quốc tế, học phí cao.' },
+    { id:'u9', name:'Đại học Sư phạm E', region:'Hà Nội', type:'public', fee:9000, rank:60, majors:['edu','psych'], score:[22.0,22.5], desc:'Đào tạo giáo viên và chuyên viên tâm lý.' },
+    { id:'u10', name:'Học viện Du lịch F', region:'Đà Nẵng', type:'public', fee:9500, rank:180, majors:['hotel'], score:[null], desc:'Trường chuyên ngành du lịch & khách sạn.' },
+    // ... thêm nhiều trường để demo (tạo khoảng 30-50 trường nếu muốn)
+  ];
+
+  const SAMPLE_BLOGS = [
+    { id:'b1', title:'Cách chọn ngành phù hợp', excerpt:'Hướng dẫn 5 bước chọn ngành theo sở thích và tương lai' },
+    { id:'b2', title:'Các nhóm ngành hot 2025–2030', excerpt:'AI, dữ liệu, năng lượng xanh, chăm sóc sức khỏe...' },
+    { id:'b3', title:'Học lực trung bình nên chọn ngành nào?', excerpt:'Gợi ý thực tế cho học sinh học lực trung bình' },
+    { id:'b4', title:'Hướng dẫn xét tuyển đại học', excerpt:'Cập nhật phương thức xét tuyển, điểm chuẩn, và hồ sơ' }
+  ];
+
+  // ---------------------------
+  // RIASEC Questions (60 explicit questions)
+  // Each question belongs to one of R,I,A,S,E,C groups
+  // ---------------------------
+  const QUESTIONS = [
+    { id:1, axis:'R', text:'Bạn thích làm việc thực tế, sửa chữa hoặc lắp ráp máy móc?' },
+    { id:2, axis:'R', text:'Bạn thích hoạt động ngoài trời, vườn tược, làm việc với đất?' },
+    { id:3, axis:'R', text:'Bạn thích tạo, xây dựng vật thể bằng tay (ví dụ: đồ thủ công, mô hình)?' },
+    { id:4, axis:'R', text:'Bạn cảm thấy hứng thú khi tìm hiểu cơ chế hoạt động của máy móc?' },
+    { id:5, axis:'R', text:'Bạn thích đọc tài liệu kỹ thuật và hướng dẫn sử dụng các thiết bị?' },
+
+    { id:6, axis:'I', text:'Bạn thích giải thích các hiện tượng tự nhiên bằng logic và số liệu?' },
+    { id:7, axis:'I', text:'Bạn thích làm thí nghiệm, phân tích, hoặc nghiên cứu?' },
+    { id:8, axis:'I', text:'Bạn thấy thích thú với việc đọc sách chuyên ngành và báo khoa học?' },
+    { id:9, axis:'I', text:'Bạn thích giải toán/phân tích khi gặp vấn đề phức tạp?' },
+    { id:10, axis:'I', text:'Bạn nghiêng về hoạt động quan sát, thu thập dữ liệu và suy luận?' },
+
+    { id:11, axis:'A', text:'Bạn thích sáng tác, vẽ, hay thiết kế hình ảnh?' },
+    { id:12, axis:'A', text:'Bạn cảm thấy thoải mái khi biểu diễn, trình diễn trước người khác?' },
+    { id:13, axis:'A', text:'Bạn thích viết sáng tạo, làm nội dung hoặc media?' },
+    { id:14, axis:'A', text:'Bạn có óc thẩm mỹ, quan tâm tới màu sắc và bố cục?' },
+    { id:15, axis:'A', text:'Bạn thường tìm kiếm giải pháp sáng tạo cho vấn đề?' },
+
+    { id:16, axis:'S', text:'Bạn thích giúp đỡ người khác, cảm giác thỏa mãn khi hỗ trợ?' },
+    { id:17, axis:'S', text:'Bạn nghĩ mình phù hợp với công việc tư vấn, chăm sóc hay giảng dạy?' },
+    { id:18, axis:'S', text:'Bạn giỏi lắng nghe và làm việc với cảm xúc của người khác?' },
+    { id:19, axis:'S', text:'Bạn tham gia các hoạt động tình nguyện hay hỗ trợ cộng đồng?' },
+    { id:20, axis:'S', text:'Bạn thích công việc cần sự tỉ mỉ trong chăm sóc con người?' },
+
+    { id:21, axis:'E', text:'Bạn thích thuyết phục, bán hàng hoặc lãnh đạo một nhóm?' },
+    { id:22, axis:'E', text:'Bạn thấy hào hứng khi đứng trước đám đông thuyết trình?' },
+    { id:23, axis:'E', text:'Bạn thích tổ chức sự kiện, xây dựng mối quan hệ và networking?' },
+    { id:24, axis:'E', text:'Bạn cảm thấy tự tin trong thương lượng và đàm phán?' },
+    { id:25, axis:'E', text:'Bạn thích công việc mang tính doanh nghiệp và sáng lập?' },
+
+    { id:26, axis:'C', text:'Bạn thích làm việc với dữ liệu, máy tính, hệ thống thông tin?' },
+    { id:27, axis:'C', text:'Bạn cảm thấy thích thú khi lập trình, sắp xếp quy trình?' },
+    { id:28, axis:'C', text:'Bạn có khả năng làm việc chính xác, hiểu quy tắc và thủ tục?' },
+    { id:29, axis:'C', text:'Bạn thích tối ưu hoá, phân loại và xử lý thông tin?' },
+    { id:30, axis:'C', text:'Bạn thấy vui khi thiết kế hệ thống làm việc hoặc quy trình?' },
+
+    // Repeat pattern to make 60 questions, rotate axes
+    { id:31, axis:'R', text:'Bạn thích các công việc sử dụng đôi tay, kiểm soát vật liệu?' },
+    { id:32, axis:'I', text:'Bạn có hứng thú với nghiên cứu lý thuyết và đọc báo cáo chuyên môn?' },
+    { id:33, axis:'A', text:'Bạn thích làm video, chỉnh sửa hình ảnh hay nhiếp ảnh?' },
+    { id:34, axis:'S', text:'Bạn đang có hứng thú với công việc hỗ trợ tinh thần và tư vấn?' },
+    { id:35, axis:'E', text:'Bạn hay đảm nhận vai trò lãnh đạo trong các hoạt động tập thể?' },
+    { id:36, axis:'C', text:'Bạn thích mô tả quy trình bằng các biểu đồ và thuật toán?' },
+    { id:37, axis:'R', text:'Bạn thích tham gia các hoạt động kỹ thuật, sửa chữa tại nhà?' },
+    { id:38, axis:'I', text:'Bạn thích giải quyết bài toán phức tạp bằng công thức?' },
+    { id:39, axis:'A', text:'Bạn thường tìm kiếm cơ hội để thể hiện sự sáng tạo cá nhân?' },
+    { id:40, axis:'S', text:'Bạn thường chủ động giúp đỡ bạn bè khi họ gặp khó khăn?' },
+    { id:41, axis:'E', text:'Bạn thích công việc cần giao tiếp nhiều, gặp gỡ đối tác?' },
+    { id:42, axis:'C', text:'Bạn có khả năng tập trung cao khi làm việc thủ công, chi tiết?' },
+    { id:43, axis:'R', text:'Bạn thoải mái với các công việc môi trường thực tế, di chuyển nhiều?' },
+    { id:44, axis:'I', text:'Bạn có xu hướng đặt nhiều câu hỏi để hiểu sâu một vấn đề?' },
+    { id:45, axis:'A', text:'Bạn thích tham gia workshop sáng tạo hoặc dự án nghệ thuật?' },
+    { id:46, axis:'S', text:'Bạn thấy hài lòng khi hướng dẫn, dạy người khác làm điều gì đó?' },
+    { id:47, axis:'E', text:'Bạn thích nắm quyền điều phối hoạt động nhóm, phân công nhiệm vụ?' },
+    { id:48, axis:'C', text:'Bạn thích làm báo cáo, quản lý hồ sơ, kiểm tra tính chính xác?' },
+    { id:49, axis:'R', text:'Bạn thường làm tốt các công việc liên quan tới dụng cụ và máy móc?' },
+    { id:50, axis:'I', text:'Bạn quan tâm tới việc cập nhật kiến thức chuyên môn thường xuyên?' },
+    { id:51, axis:'A', text:'Bạn cảm thấy năng lượng khi tham gia các dự án sáng tạo?' },
+    { id:52, axis:'S', text:'Bạn có khả năng đồng cảm, xây dựng mối quan hệ bền vững?' },
+    { id:53, axis:'E', text:'Bạn thích phát triển ý tưởng kinh doanh và đưa nó vào thực tế?' },
+    { id:54, axis:'C', text:'Bạn thích tổ chức công việc theo trình tự, việc nào trước việc nào sau?' },
+    { id:55, axis:'R', text:'Bạn tự tin khi dùng thiết bị cơ khí hoặc công cụ tay?' },
+    { id:56, axis:'I', text:'Bạn được truyền cảm hứng bởi các lý thuyết và mô hình nghiên cứu?' },
+    { id:57, axis:'A', text:'Bạn thích thử nghiệm phong cách nghệ thuật mới, khám phá hình thức?' },
+    { id:58, axis:'S', text:'Bạn cảm thấy bản thân phù hợp với nghề có tính cộng đồng?' },
+    { id:59, axis:'E', text:'Bạn chịu được áp lực khi phải cạnh tranh, cố gắng đạt mục tiêu?' },
+    { id:60, axis:'C', text:'Bạn thấy hứng thú với việc tạo và duy trì các hệ thống hiệu quả?' }
+  ];
+
+  // ---------------------------
+  // DB Initialization: create or load from localStorage
+  // ---------------------------
+  function initDB(){
+    const db = loadDB();
+    if(!db || !db.majors){
+      const newdb = {
+        majors: SAMPLE_MAJORS,
+        schools: SAMPLE_SCHOOLS,
+        blogs: SAMPLE_BLOGS,
+        tests: [],   // lưu kết quả test người dùng
+        users: []
+      };
+      saveDB(newdb);
+      return newdb;
+    }
+    // ensure required collections exist
+    if(!db.majors) db.majors = SAMPLE_MAJORS;
+    if(!db.schools) db.schools = SAMPLE_SCHOOLS;
+    if(!db.blogs) db.blogs = SAMPLE_BLOGS;
+    if(!db.tests) db.tests = [];
+    if(!db.users) db.users = [];
+    saveDB(db);
+    return db;
+  }
+  let DB = initDB();
+
+  // ---------------------------
+  // Populate UI: majors, schools, blogs, filters
+  // ---------------------------
+  function populateMajors(){
+    const wrap = el('majorList'); wrap.innerHTML = '';
+    DB.majors.forEach(m=>{
+      const d = document.createElement('div'); d.className='card';
+      d.innerHTML = `<h3>${m.name}</h3>
+        <p style="margin:6px 0">${m.desc}</p>
+        <p class="small"><strong>Kỹ năng:</strong> ${m.skills.join(', ')}</p>
+        <p class="small"><strong>Cơ hội:</strong> ${m.jobs.join(', ')}</p>
+        <div style="margin-top:8px"><button class="btn" onclick="showMajor('${m.id}')">Chi tiết</button></div>`;
+      wrap.appendChild(d);
+    });
+  }
+
+  function populateSchools(){
+    const wrap = el('schoolList'); wrap.innerHTML = '';
+    DB.schools.forEach(s=>{
+      const d = document.createElement('div'); d.className='card';
+      d.style.marginBottom='10px';
+      d.innerHTML = `<div style="display:flex;align-items:center;gap:12px;justify-content:space-between">
+        <div>
+          <h3 style="margin:0">${s.name}</h3>
+          <div class="small">${s.region} • ${s.type==='public'?'Công lập':'Tư thục'} • Học phí: ${s.fee? s.fee+'K VND/năm':'—'}</div>
+        </div>
+        <div class="small">Xếp hạng: ${s.rank}</div>
+      </div>
+      <p style="margin:8px 0">${s.desc}</p>
+      <p class="small"><strong>Ngành:</strong> ${s.majors.map(mid=> (DB.majors.find(mm=>mm.id===mid)||{name:mid}).name).join(', ')}</p>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" onclick="openSchool('${s.id}')">Chi tiết</button>
+        <button class="btn" onclick="addCompare('${s.id}')">So sánh</button>
+        <button class="btn" onclick="saveFavorite('${s.id}')">Lưu</button>
+      </div>`;
+      wrap.appendChild(d);
+    });
+    // fill compare selects
+    const cmpA = el('cmpA'); const cmpB = el('cmpB');
+    cmpA.innerHTML = '<option value=\"\">-- Chọn trường A --</option>';
+    cmpB.innerHTML = '<option value=\"\">-- Chọn trường B --</option>';
+    DB.schools.forEach(s=>{ const o1=document.createElement('option'); o1.value=s.id; o1.textContent=s.name; cmpA.appendChild(o1); const o2=document.createElement('option'); o2.value=s.id; o2.textContent=s.name; cmpB.appendChild(o2); });
+    // fill region filter
+    const regions = Array.from(new Set(DB.schools.map(s=>s.region))).sort();
+    const filterRegion = el('filterRegion'); filterRegion.innerHTML = '<option value=\"\">Tất cả tỉnh/thành</option>';
+    regions.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; filterRegion.appendChild(o) });
+  }
+
+  function populateBlogs(){
+    const wrap = el('blogList'); wrap.innerHTML='';
+    DB.blogs.forEach(b=>{
+      const div=document.createElement('div'); div.className='card';
+      div.innerHTML = `<h3>${b.title}</h3><p>${b.excerpt}</p><div style="margin-top:8px"><a href="#" class="btn" onclick="openBlog('${b.id}')">Đọc tiếp</a></div>`;
+      wrap.appendChild(div);
+    });
+  }
+
+  function populateSkillFilter(){
+    const sel = el('filterSkill'); sel.innerHTML='<option value=\"\">Lọc theo kỹ năng (tất cả)</option>';
+    const skills = Array.from(new Set(DB.majors.flatMap(m=>m.skills))).sort();
+    skills.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o) });
+  }
+
+  // Open major detail
+  function showMajor(id){
+    const m = DB.majors.find(x=>x.id===id);
+    if(!m) return alert('Không tìm thấy ngành');
+    alert(`${m.name}\n\nMô tả: ${m.desc}\nKỹ năng: ${m.skills.join(', ')}\nCơ hội: ${m.jobs.join(', ')}\nNhóm RIASEC: ${m.groups.join(', ')}`);
+  }
+
+  // Open school
+  function openSchool(id){
+    const s = DB.schools.find(x=>x.id===id);
+    if(!s) return alert('Không tìm thấy trường');
+    alert(`${s.name}\n\n${s.desc}\n\nNgành: ${s.majors.map(mid=> (DB.majors.find(mm=>mm.id===mid)||{name:mid}).name).join(', ')}\nHọc phí: ${s.fee? s.fee+'K VND/năm':'—'}\nĐiểm chuẩn (nếu có): ${s.score? s.score.join(', '):'—'}`);
+  }
+
+  // Save favorite
+  function saveFavorite(id){
+    const db = loadDB();
+    db.favorites = db.favorites || [];
+    if(!db.favorites.includes(id)) db.favorites.push(id);
+    saveDB(db);
+    alert('Đã lưu vào danh sách yêu thích!');
+  }
+
+  // Add compare
+  function addCompare(id){
+    const cmpA = el('cmpA'), cmpB = el('cmpB');
+    if(!cmpA.value) cmpA.value = id;
+    else if(!cmpB.value && cmpA.value !== id) cmpB.value = id;
+    else cmpB.value = id;
+  }
+
+  // ---------------------------
+  // TEST UI logic
+  // ---------------------------
+  let answers = new Array(QUESTIONS.length).fill(3); // trung bình mặc định 3
+  let qIndex = 0;
+
+  function renderQuestion(){
+    const q = QUESTIONS[qIndex];
+    el('qCount').textContent = `Câu ${qIndex+1} / ${QUESTIONS.length}`;
+    el('progFill').style.width = `${((qIndex+1)/QUESTIONS.length)*100}%`;
+    const wrap = el('qWrap'); wrap.innerHTML = '';
+    const qdiv = document.createElement('div'); qdiv.innerHTML = `<div class="question">${q.text}</div>`;
+    const opts = document.createElement('div'); opts.className='options';
+    for(let i=1;i<=5;i++){
+      const b = document.createElement('div'); b.className='opt'; b.textContent = i + (i===1? ' — Không' : i===5? ' — Rất' : '');
+      b.dataset.val = i;
+      if(answers[qIndex]===i) b.classList.add('selected');
+      b.onclick = ()=>{ answers[qIndex] = i; Array.from(opts.children).forEach(n=>n.classList.remove('selected')); b.classList.add('selected'); updateTestStatus(); };
+      opts.appendChild(b);
+    }
+    qdiv.appendChild(opts);
+    wrap.appendChild(qdiv);
+  }
+
+  function updateTestStatus(){
+    const chosen = answers.filter(a=>a!==null).length;
+    el('testStatus').textContent = `${chosen} / ${QUESTIONS.length} câu đã trả lời`;
+  }
+
+  el('nextQ').addEventListener('click', ()=>{ if(qIndex < QUESTIONS.length-1) qIndex++; renderQuestion(); });
+  el('prevQ').addEventListener('click', ()=>{ if(qIndex > 0) qIndex--; renderQuestion(); });
+
+  // finish test: compute RIASEC scores
+  function finishTest(){
+    // answers length check
+    // compute sum per axis
+    const scores = {R:0,I:0,A:0,S:0,E:0,C:0};
+    for(let i=0;i<QUESTIONS.length;i++){
+      const axis = QUESTIONS[i].axis;
+      const val = answers[i] || 0;
+      scores[axis] += val;
+    }
+    // normalize as average
+    const avg = {};
+    Object.keys(scores).forEach(k=>{ avg[k] = +(scores[k]).toFixed(2) });
+
+    // determine top 3 axes
+    const axesSorted = Object.entries(avg).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    const primary = axesSorted[0], secondary = axesSorted[1], third = axesSorted[2];
+
+    // map to majors
+    const suggestedMajors = DB.majors.filter(m => m.groups.includes(primary) || m.groups.includes(secondary)).slice(0,6);
+
+    // prepare display
+    const summary = el('resultSummary');
+    summary.innerHTML = `<div style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+      <div><strong>Điểm RIASEC (tổng theo trục):</strong> ${JSON.stringify(avg)}</div>
+      <div class="small">Nhóm chính: <strong>${primary}</strong> — Phụ: ${secondary}, ${third}</div>
+    </div>
+    <hr />
+    <div><strong>Gợi ý ngành hàng đầu:</strong></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">${suggestedMajors.map(m=>`<div class="card"><strong>${m.name}</strong><div class="small">${m.desc}</div></div>`).join('')}</div>
+    `;
+
+    el('resultArea').style.display='block';
+    // save test result to DB
+    const db = loadDB();
+    db.tests = db.tests || [];
+    const testRecord = {
+      id: uid('test'),
+      date: (new Date()).toISOString(),
+      scores: avg,
+      primary, secondary, third,
+      answers
+    };
+    db.tests.push(testRecord);
+    saveDB(db);
+    DB = db;
+    populateMajors();
+  }
+
+  // Buttons
+  el('finishTest').addEventListener('click', ()=> finishTest());
+  el('goTest').addEventListener('click', ()=> { location.hash='#test'; qIndex=0; renderQuestion(); });
+  el('startBtn').addEventListener('click', ()=> { location.hash='#test'; qIndex=0; renderQuestion(); });
+
+  // initial render
+  renderQuestion();
+  updateTestStatus();
+  populateMajors();
+  populateSchools();
+  populateBlogs();
+  populateSkillFilter();
+
+  // Suggest majors button
+  el('suggestMajors').addEventListener('click', ()=>{
+    location.hash='#majors';
+    window.scrollTo({top:document.querySelector('#majors').offsetTop - 40, behavior:'smooth'});
+  });
+
+  // Suggest schools button (simple ranking by matching majors)
+  el('suggestSchools').addEventListener('click', ()=>{
+    // use last test
+    const db = loadDB();
+    const lastTest = (db.tests && db.tests.length)? db.tests[db.tests.length-1] : null;
+    if(!lastTest){ alert('Bạn chưa làm bài test. Vui lòng hoàn thành bài test trước.'); return; }
+    // primary axis
+    const primary = lastTest.primary;
+    // majors that match primary
+    const matchedMajors = DB.majors.filter(m=>m.groups.includes(primary)).map(m=>m.id);
+    // rank schools by number of matched majors and lower fee and better rank
+    const scored = DB.schools.map(s=>{
+      const common = s.majors.filter(m=>matchedMajors.includes(m)).length;
+      const score = common * 100 - (s.fee || 0) - (s.rank || 999);
+      return {...s, scoreRank: score, common}
+    }).sort((a,b)=>b.scoreRank - a.scoreRank);
+    const top5 = scored.slice(0,5);
+    // show list
+    const wrap = el('schoolList');
+    wrap.innerHTML = top5.map(s=>`<div class="card"><h3>${s.name}</h3><div class="small">${s.region} • ${s.type==='public'?'Công lập':'Tư thục'} • Học phí: ${s.fee? s.fee+'K':'—'}</div><p style="margin:6px 0">${s.desc}</p><div class="small"><strong>Ngành phù hợp:</strong> ${s.majors.map(mid=> (DB.majors.find(mm=>mm.id===mid)||{name:mid}).name).join(', ')}</div></div>`).join('');
+    location.hash='#schools';
+  });
+
+  // Export result JSON
+  el('exportResult').addEventListener('click', ()=>{
+    const db = loadDB();
+    const lastTest = db.tests && db.tests.length? db.tests[db.tests.length-1] : null;
+    if(!lastTest) return alert('Không có kết quả để xuất.');
+    const blob = new Blob([JSON.stringify(lastTest,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = `unimatcher_test_${lastTest.id}.json`; a.click();
+  });
+
+  // ---------------------------
+  // Filters & Search schools
+  // ---------------------------
+  el('applyFilters').addEventListener('click', ()=>{
+    const region = el('filterRegion').value;
+    const type = el('filterType').value;
+    const fee = el('filterFee').value;
+    const rank = el('filterRank').value;
+    const q = el('schoolSearch').value.trim().toLowerCase();
+
+    let res = DB.schools.slice();
+    if(region) res = res.filter(s=>s.region===region);
+    if(type) res = res.filter(s=>s.type===type);
+    if(fee){
+      if(fee==='lt10000') res = res.filter(s=>s.fee && s.fee < 10000);
+      if(fee==='10000-30000') res = res.filter(s=>s.fee && s.fee >= 10000 && s.fee <= 30000);
+      if(fee==='gt30000') res = res.filter(s=>s.fee && s.fee > 30000);
+    }
+    if(rank){
+      if(rank==='top50') res = res.filter(s=>s.rank && s.rank <= 50);
+      if(rank==='top200') res = res.filter(s=>s.rank && s.rank <= 200);
+    }
+    if(q){
+      res = res.filter(s => s.name.toLowerCase().includes(q) || s.majors.some(m=> (DB.majors.find(mm=>mm.id===m)||{name:''}).name.toLowerCase().includes(q)));
+    }
+
+    const wrap = el('schoolList');
+    if(res.length===0) wrap.innerHTML = '<p>Không tìm thấy trường phù hợp.</p>';
+    else wrap.innerHTML = res.map(s=>`<div class="card"><h3>${s.name}</h3><div class="small">${s.region} • ${s.type==='public'?'Công lập':'Tư thục'} • Học phí: ${s.fee? s.fee+'K':'—'}</div><p style="margin:6px 0">${s.desc}</p><div class="small"><strong>Ngành:</strong> ${s.majors.map(mid=> (DB.majors.find(mm=>mm.id===mid)||{name:mid}).name).join(', ')}</div></div>`).join('');
+  });
+
+  el('resetFilters').addEventListener('click', ()=>{
+    el('filterRegion').value=''; el('filterType').value=''; el('filterFee').value=''; el('filterRank').value=''; el('schoolSearch').value=''; populateSchools();
+  });
+
+  // quick search
+  el('gotoSchools').addEventListener('click', ()=>{ location.hash='#schools'; window.scrollTo({top:document.querySelector('#schools').offsetTop-30, behavior:'smooth'})});
+  el('quickSearch').addEventListener('keydown', (e)=>{ if(e.key==='Enter') { el('schoolSearch').value = e.target.value; el('applyFilters').click(); } });
+
+  // ---------------------------
+  // Compare logic
+  // ---------------------------
+  el('doCompare').addEventListener('click', ()=>{
+    const aId = el('cmpA').value; const bId = el('cmpB').value;
+    if(!aId || !bId) return alert('Chọn 2 trường để so sánh.');
+    const a = DB.schools.find(s=>s.id===aId); const b = DB.schools.find(s=>s.id===bId);
+    // metrics: avg score, fee, rank, number of matching majors with sample user's primary majors
+    const html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="card"><h3>${a.name}</h3><p class="small">${a.region} • ${a.type==='public'?'Công lập':'Tư thục'}</p>
+      <p><strong>Học phí:</strong> ${a.fee? a.fee+'K VNĐ/năm':'—'}</p>
+      <p><strong>Điểm chuẩn (năm):</strong> ${a.score? a.score.join(', '): '—'}</p>
+      <p><strong>Ngành:</strong> ${a.majors.map(mid=> (DB.majors.find(mm=>mm.id===mid)||{name:mid}).name).join(', ')}</p></div>
+      <div class="card"><h3>${b.name}</h3><p class="small">${b.region} • ${b.type==='public'?'Công lập':'Tư thục'}</p>
+      <p><strong>Học phí:</strong> ${b.fee? b.fee+'K VNĐ/năm':'—'}</p>
+      <p><strong>Điểm chuẩn (năm):</strong> ${b.score? b.score.join(', '): '—'}</p>
+      <p><strong>Ngành:</strong> ${b.majors.map(mid=> (DB.majors.find(mm=>mm.id===mid)||{name:mid}).name).join(', ')}</p></div>
+    </div>
+    <hr />
+    <div style="display:flex;gap:12px;align-items:center">
+      <div style="flex:1"><strong>So sánh học phí</strong><div class="bar" style="margin-top:6px"><i style="width:${Math.min(100, (a.fee||0)/Math.max(1,(a.fee||0 + b.fee||0))*100)}%"></i></div><div class="small">${a.fee? a.fee+'K' : '—'}</div></div>
+      <div style="flex:1"><strong>So sánh học phí</strong><div class="bar" style="margin-top:6px"><i style="width:${Math.min(100, (b.fee||0)/Math.max(1,(a.fee||0 + b.fee||0))*100)}%"></i></div><div class="small">${b.fee? b.fee+'K' : '—'}</div></div>
+    </div>`;
+    el('compareResult').innerHTML = html;
+    location.hash='#compare';
+  });
+
+  el('clearCompare').addEventListener('click', ()=>{ el('cmpA').value=''; el('cmpB').value=''; el('compareResult').innerHTML=''; });
+
+  // ---------------------------
+  // Blog open
+  // ---------------------------
+  function openBlog(id){
+    const b = DB.blogs.find(x=>x.id===id);
+    if(!b) return alert('Không tìm thấy bài viết.');
+    alert(`${b.title}\n\n${b.excerpt}\n\n(Đây là bản demo. Bạn có thể thêm nội dung chi tiết trong Admin.)`);
+  }
+  window.openBlog = openBlog;
+
+  // ---------------------------
+  // Contact form (demo)
+  // ---------------------------
+  el('sendContact').addEventListener('click', ()=>{
+    const name = el('cname').value.trim(); const email = el('cemail').value.trim(); const message = el('cmessage').value.trim();
+    if(!name || !email || !message) return alert('Vui lòng nhập đầy đủ thông tin.');
+    // store in db -> messages
+    const db = loadDB(); db.messages = db.messages || []; db.messages.push({id:uid('msg'), name, email, message, date:(new Date()).toISOString()}); saveDB(db); DB=db;
+    alert('Cảm ơn! Chúng tôi đã nhận được câu hỏi.'); el('contactForm').reset();
+  });
+
+  // ---------------------------
+  // Admin: Export / Import / Seed / Clear
+  // ---------------------------
+  el('exportData').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(loadDB(), null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='unimatcher_data_export.json'; a.click();
+  });
+
+  el('importData').addEventListener('click', ()=>{ el('importFile').click(); });
+  el('importFile').addEventListener('change', (ev)=>{
+    const f = ev.target.files[0]; if(!f) return;
+    const reader = new FileReader(); reader.onload = e => {
+      try{
+        const obj = JSON.parse(e.target.result);
+        if(!obj.majors || !obj.schools) return alert('File không hợp lệ (thiếu majors hoặc schools).');
+        saveDB(obj); DB = loadDB(); populateMajors(); populateSchools(); populateBlogs(); alert('Nhập dữ liệu thành công.');
+      }catch(err){ alert('Không thể đọc file: ' + err.message) }
+    }; reader.readAsText(f);
+  });
+
+  el('seedData').addEventListener('click', ()=>{
+    if(!confirm('Seed dữ liệu mẫu (sẽ ghi đè DB hiện tại)?')) return;
+    const newdb = {
+      majors: SAMPLE_MAJORS,
+      schools: SAMPLE_SCHOOLS,
+      blogs: SAMPLE_BLOGS,
+      tests: [],
+      users: []
+    };
+    saveDB(newdb); DB = newdb; populateMajors(); populateSchools(); populateBlogs(); alert('Seed dữ liệu hoàn tất.');
+  });
+
+  el('clearData').addEventListener('click', ()=>{
+    if(!confirm('Xóa toàn bộ dữ liệu demo trong localStorage?')) return;
+    localStorage.removeItem('unimatcher_db'); DB = initDB(); populateMajors(); populateSchools(); populateBlogs(); alert('Đã xóa dữ liệu.');
+  });
+
+  // download sample data
+  el('downloadSample').addEventListener('click', ()=>{
+    const sample = {majors: SAMPLE_MAJORS, schools: SAMPLE_SCHOOLS, blogs: SAMPLE_BLOGS};
+    const blob = new Blob([JSON.stringify(sample, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='unimatcher_sample_data.json'; a.click();
+  });
+
+  // import demo via drag&drop (bonus)
+  window.addEventListener('dragover', e=>e.preventDefault()); window.addEventListener('drop', e=>{ e.preventDefault(); });
+
+  // ---------------------------
+  // Dark mode toggle
+  // ---------------------------
+  function applyDark(d){
+    if(d){ document.documentElement.classList.add('dark'); localStorage.setItem('um_dark','1'); el('darkToggle').textContent='☀️'; }
+    else { document.documentElement.classList.remove('dark'); localStorage.removeItem('um_dark'); el('darkToggle').textContent='🌙'; }
+  }
+  el('darkToggle').addEventListener('click', ()=>{ applyDark(!document.documentElement.classList.contains('dark')); });
+  if(localStorage.getItem('um_dark')) applyDark(true);
+
+  // ---------------------------
+  // On load - show initial state
+  // ---------------------------
+  (function initialLoad(){
+    populateMajors(); populateSchools(); populateBlogs(); populateSkillFilter();
+    // set default demo values for answers (3)
+    answers = new Array(QUESTIONS.length).fill(3);
+    qIndex = 0;
+    renderQuestion();
+    // show sample message if DB was empty before
+    // console.log('UniMatcher ready.');
+  })();
+
+  // expose some functions to global for inline onclicks
+  window.showMajor = showMajor;
+  window.openSchool = openSchool;
+  window.addCompare = addCompare;
+  window.saveFavorite = saveFavorite;
+  window.renderQuestion = renderQuestion;
+  window.finishTest = finishTest;
+  window.openBlog = openBlog;
+
+  </script>
+
+  <!-- =========================
+       Sample Backend (Node.js + Express + MongoDB)
+       (This is a commented block. Copy to server if you want to enable real backend)
+       =========================
+       
+  // server.js
+  const express = require('express');
+  const mongoose = require('mongoose');
+  const cors = require('cors');
+  const app = express();
+  app.use(cors());
+  app.use(express.json());
+  mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/unimatcher', { useNewUrlParser:true, useUnifiedTopology:true })
+    .then(()=>console.log('MongoDB connected'))
+    .catch(err=>console.error(err));
+  const Schema = mongoose.Schema;
+  const MajorSchema = new Schema({ id:String, name:String, desc:String, skills:[String], jobs:[String], groups:[String] });
+  const SchoolSchema = new Schema({ id:String, name:String, region:String, type:String, fee:Number, rank:Number, majors:[String], score:[Number], desc:String });
+  const BlogSchema = new Schema({ id:String, title:String, excerpt:String, content:String });
+  const TestSchema = new Schema({ id:String, date:Date, scores:Object, answers:Array });
+  const Major = mongoose.model('Major', MajorSchema);
+  const School = mongoose.model('School', SchoolSchema);
+  const Blog = mongoose.model('Blog', BlogSchema);
+  const Test = mongoose.model('Test', TestSchema);
+  app.get('/api/majors', async (req,res)=>{ const items = await Major.find(); res.json(items) });
+  app.get('/api/schools', async (req,res)=>{ const items = await School.find(); res.json(items) });
+  app.post('/api/tests', async (req,res)=>{ const t = await Test.create(req.body); res.json(t) });
+  app.listen(process.env.PORT || 4000, ()=>console.log('Server running'));
+  
+  ========================= -->
+
+</body>
+</html>
